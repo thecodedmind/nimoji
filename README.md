@@ -29,7 +29,7 @@ echo emojify "I love :santa:!"
 echo demojify "I love 🎅"
 # I love :santa:
 
-echo stripEmojis "I love 🎅"
+echo stripEmojis "I love 🎅" ##also supports stripping discord supported emojis from text.
 # I love
 
 echo randomEmoji()
