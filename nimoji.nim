@@ -14,25 +14,33 @@ proc getEmojiJson():JsonNode =
         
     return parseFile(getHomeDir()&"emoji.json")
 
-proc replacex(s, repFrom, repTo:string):string =
-    result = s
-    while repFrom in result:
-        result = result.replace(repFrom, repTo)
-        
+## Utils for discord
+proc findDiscordEmojis*(msg:string):seq[string] =
+    return msg.findAll(re"<(.?):(.+?)>")
+
+proc stripDiscordEmojis*(msg:string):string =
+    return msg.replace(re"<(.?):(.+?)>")
+
+    
 ## Searches the emoji dict for emoji names matching search, returns all hits
 proc findEmoji*(part:string):string =
     for k, v in getEmojiJson().getFields().pairs:
-        if part.replacex(":", "") in k:
+        if part.replace(re":") in k:
             return v.getStr
             
 proc findEmojis*(part:string):seq[string] =
     for k, v in getEmojiJson().getFields().pairs:
-        if part.replacex(":", "") in k:
+        if part.replace(re":") in k:
             result.add v.getStr
-        
+
+proc findEmojiCodes*(part:string):seq[string] =
+    for k, v in getEmojiJson().getFields().pairs:
+        if part.replace(re":") in k:
+            result.add k
+            
 ## Searches the emoji dict for emojis matching the search
 proc getEmoji*(emoji:string, default:string = "unknown_emoji"):string =
-    return getEmojiJson(){emoji.replacex(":", "")}.getStr(default)
+    return getEmojiJson(){emoji.replace(re":")}.getStr(default)
     
 ## Searches the emoji dict for emojis matching the search
 proc getEmojiCode*(emoji:string):string =
@@ -69,9 +77,11 @@ proc randomEmoji*():string =
     return e[num]
 
 ## Strips emoji characters out of msg
-proc stripEmojis*(msg:string):string =
+proc stripEmojis*(msg:string, discord:bool = true):string =
     result = msg
     for k, v in getEmojiJson().getFields().pairs:
         if v.getStr in result:
             result = msg.replace(v.getStr, "")
-    
+
+    if discord:
+        result = result.stripDiscordEmojis()
